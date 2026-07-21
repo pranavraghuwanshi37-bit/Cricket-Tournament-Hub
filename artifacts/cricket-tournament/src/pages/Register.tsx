@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import phonepeQr from '@assets/e228529f-b322-4684-a894-639b96ba4986_1784655226760.jpg';
 import { Layout } from '@/components/layout/Layout';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -200,12 +201,28 @@ export function Register() {
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">Registration Fee</p>
                     <p className="text-5xl font-black text-primary mb-8">₹3,500</p>
 
-                    <div className="bg-background rounded-xl p-6 border border-border inline-block text-left w-full sm:w-auto">
-                      <p className="text-sm text-muted-foreground mb-1">Pay via UPI to:</p>
-                      <div className="flex items-center gap-3 bg-muted px-4 py-3 rounded-md mb-4 border border-border">
-                        <span className="font-mono text-lg font-bold">8269818508@axl</span>
+                    <div className="bg-background rounded-xl p-6 border border-border text-left w-full">
+                      <div className="flex flex-col sm:flex-row gap-6 items-center">
+                        <div className="shrink-0 flex flex-col items-center gap-2">
+                          <img src={phonepeQr} alt="PhonePe QR Code" className="w-44 h-44 rounded-xl border-2 border-primary/40 object-cover" />
+                          <span className="text-xs text-muted-foreground">Scan & Pay via PhonePe</span>
+                        </div>
+                        <div className="flex-1 space-y-4 w-full">
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Pay via UPI to:</p>
+                            <div className="flex items-center gap-3 bg-muted px-4 py-3 rounded-md border border-border">
+                              <span className="font-mono text-lg font-bold">8269818508@axl</span>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Account Holder</p>
+                            <p className="text-sm font-bold text-white">ADITYA PRATAP SINGH RAGHUWANSHI</p>
+                          </div>
+                          <div className="py-2 px-4 rounded-lg bg-primary/10 border border-primary/30">
+                            <p className="text-sm font-bold text-primary">📅 Last Date to Register: 1st August 2026</p>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">Account Holder: ADITYA PRATAP SINGH RAGHUWANSHI</p>
                     </div>
                   </div>
 
