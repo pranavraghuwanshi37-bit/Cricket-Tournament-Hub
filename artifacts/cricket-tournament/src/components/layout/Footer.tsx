@@ -9,7 +9,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <Trophy className="w-6 h-6 text-primary" />
-              <h2 className="font-bold text-xl uppercase tracking-wider">MPCL<span className="text-primary">2025</span></h2>
+              <h2 className="font-bold text-xl uppercase tracking-wider">MPCL<span className="text-primary">2026</span></h2>
             </div>
             <p className="text-muted-foreground text-sm max-w-sm">
               The premier cricket tournament of Madhya Pradesh. Showcasing elite talent and delivering high-octane cricketing action.
@@ -26,14 +26,14 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-sm uppercase tracking-wider mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>support@mpcl2025.com</li>
+              <li>support@mpcl2026.com</li>
               <li>+91 98765 43210</li>
               <li>Madhya Pradesh, India</li>
             </ul>
           </div>
         </div>
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>&copy; 2025 MP Premier Cricket Tournament. All rights reserved.</p>
+          <p>&copy; 2026 MP Premier Cricket Tournament. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-primary">Terms</a>
             <a href="#" className="hover:text-primary">Privacy</a>

@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registrationSchema, RegistrationForm } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { submitRegistration } from '@/hooks/useRegistrations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Users, IndianRupee, CheckCircle2, AlertCircle, Plus, Trash2, Upload, Copy } from 'lucide-react';
+import { Trophy, IndianRupee, CheckCircle2, Upload, Copy } from 'lucide-react';
 import { Link } from 'wouter';
 import { toast } from 'sonner';
 
 const STEPS = [
   { id: 1, title: 'Team Info', icon: Trophy },
-  { id: 2, title: 'Players', icon: Users },
-  { id: 3, title: 'Payment', icon: IndianRupee },
-  { id: 4, title: 'Done', icon: CheckCircle2 }
+  { id: 2, title: 'Payment', icon: IndianRupee },
+  { id: 3, title: 'Done', icon: CheckCircle2 }
 ];
 
 export function Register() {
@@ -37,31 +35,14 @@ export function Register() {
       captainEmail: '',
       city: '',
       category: 'Open',
-      players: Array(7).fill({ name: '', age: '', role: 'Batsman', phone: '' })
     },
     mode: 'onTouched'
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "players"
   });
 
   const validateStep1 = async () => {
     const fieldsToValidate: (keyof RegistrationForm)[] = ['teamName', 'captainName', 'captainPhone', 'captainEmail', 'city', 'category'];
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) setCurrentStep(2);
-  };
-
-  const validateStep2 = async () => {
-    const isValid = await form.trigger('players');
-    if (isValid) {
-      if (fields.length < 7) {
-        toast.error("Minimum 7 players required");
-        return;
-      }
-      setCurrentStep(3);
-    }
   };
 
   const handleFinalSubmit = async () => {
@@ -79,7 +60,7 @@ export function Register() {
       const formData = form.getValues();
       const id = await submitRegistration(formData, paymentFile, transactionId);
       setRegistrationId(id);
-      setCurrentStep(4);
+      setCurrentStep(3);
       toast.success("Registration submitted successfully!");
     } catch (error) {
       console.error(error);
@@ -103,23 +84,23 @@ export function Register() {
         <div className="mb-12">
           <div className="flex justify-between relative">
             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-muted z-0 rounded-full" />
-            <div 
+            <div
               className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary z-0 transition-all duration-500 ease-in-out rounded-full"
-              style={{ width: `\${((currentStep - 1) / 3) * 100}%` }}
+              style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
             />
             {STEPS.map((step) => {
               const isActive = step.id === currentStep;
               const isCompleted = step.id < currentStep;
               return (
                 <div key={step.id} className="relative z-10 flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-colors duration-300 \${
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-colors duration-300 ${
                     isActive ? 'bg-primary border-primary/20 text-primary-foreground shadow-[0_0_15px_rgba(212,175,55,0.5)]' :
                     isCompleted ? 'bg-primary border-primary text-primary-foreground' :
                     'bg-card border-border text-muted-foreground'
                   }`}>
                     <step.icon className="w-5 h-5" />
                   </div>
-                  <span className={`mt-2 text-xs font-bold uppercase tracking-wider hidden sm:block \${
+                  <span className={`mt-2 text-xs font-bold uppercase tracking-wider hidden sm:block ${
                     isActive || isCompleted ? 'text-white' : 'text-muted-foreground'
                   }`}>{step.title}</span>
                 </div>
@@ -144,7 +125,7 @@ export function Register() {
                     <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Team Information</h2>
                     <p className="text-muted-foreground">Enter your core team details to get started.</p>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2 sm:col-span-2">
                       <Label>Team Name</Label>
@@ -172,7 +153,7 @@ export function Register() {
 
                     <div className="space-y-2">
                       <Label>Team Category</Label>
-                      <select 
+                      <select
                         {...form.register('category')}
                         className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       >
@@ -210,93 +191,6 @@ export function Register() {
                   exit={{ opacity: 0, x: -20 }}
                   className="p-6 sm:p-10 space-y-8"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Player Roster</h2>
-                      <p className="text-muted-foreground">Add between 7 and 15 players.</p>
-                    </div>
-                    <Badge variant="outline" className="text-lg py-1 px-4 border-primary text-primary">{fields.length} / 15</Badge>
-                  </div>
-
-                  {form.formState.errors.players?.root && (
-                    <div className="bg-destructive/10 text-destructive p-4 rounded-lg flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5" />
-                      {form.formState.errors.players.root.message}
-                    </div>
-                  )}
-
-                  <div className="space-y-6">
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 sm:p-6 rounded-xl border border-border bg-card/50 relative group">
-                        <div className="absolute -top-3 left-4 bg-background px-2 text-xs font-bold text-muted-foreground">PLAYER {index + 1}</div>
-                        {fields.length > 7 && (
-                          <button 
-                            type="button" 
-                            onClick={() => remove(index)}
-                            className="absolute -top-3 right-4 bg-destructive text-destructive-foreground p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs">Full Name</Label>
-                            <Input {...form.register(`players.\${index}.name`)} placeholder="Name" />
-                            {form.formState.errors.players?.[index]?.name && <span className="text-[10px] text-destructive">{form.formState.errors.players[index]?.name?.message}</span>}
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">Age</Label>
-                            <Input type="number" {...form.register(`players.\${index}.age`)} placeholder="Age" />
-                            {form.formState.errors.players?.[index]?.age && <span className="text-[10px] text-destructive">{form.formState.errors.players[index]?.age?.message}</span>}
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">Role</Label>
-                            <select 
-                              {...form.register(`players.\${index}.role`)}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                            >
-                              <option value="Batsman">Batsman</option>
-                              <option value="Bowler">Bowler</option>
-                              <option value="All-Rounder">All-Rounder</option>
-                              <option value="WK-Batsman">WK-Batsman</option>
-                            </select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">Phone (Opt)</Label>
-                            <Input {...form.register(`players.\${index}.phone`)} placeholder="Phone" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {fields.length < 15 && (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => append({ name: '', age: '' as any, role: 'Batsman', phone: '' })}
-                      className="w-full h-12 border-dashed border-2 hover:border-primary hover:text-primary transition-colors"
-                    >
-                      <Plus className="w-5 h-5 mr-2" /> Add Player
-                    </Button>
-                  )}
-
-                  <div className="flex justify-between pt-6 border-t border-border">
-                    <Button variant="ghost" onClick={() => setCurrentStep(1)}>Back</Button>
-                    <Button onClick={validateStep2} size="lg" className="h-12 px-8 uppercase tracking-widest">Next Step &rarr;</Button>
-                  </div>
-                </motion.div>
-              )}
-
-              {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="p-6 sm:p-10 space-y-8"
-                >
                   <div className="text-center">
                     <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Payment</h2>
                     <p className="text-muted-foreground">Complete your registration by paying the tournament fee.</p>
@@ -318,14 +212,14 @@ export function Register() {
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <Label>Transaction ID / UTR Number</Label>
-                      <Input 
+                      <Input
                         value={transactionId}
                         onChange={(e) => setTransactionId(e.target.value)}
-                        placeholder="Enter the 12-digit UPI reference number" 
+                        placeholder="Enter the 12-digit UPI reference number"
                         className="h-12 font-mono"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>Payment Screenshot</Label>
                       <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border hover:border-primary rounded-xl cursor-pointer bg-card/50 transition-colors">
@@ -335,10 +229,10 @@ export function Register() {
                             {paymentFile ? <span className="text-primary font-bold">{paymentFile.name}</span> : "Click to upload payment proof"}
                           </p>
                         </div>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
                           onChange={(e) => setPaymentFile(e.target.files?.[0] || null)}
                         />
                       </label>
@@ -346,11 +240,11 @@ export function Register() {
                   </div>
 
                   <div className="flex justify-between pt-6 border-t border-border">
-                    <Button variant="ghost" onClick={() => setCurrentStep(2)}>Back</Button>
-                    <Button 
-                      onClick={handleFinalSubmit} 
+                    <Button variant="ghost" onClick={() => setCurrentStep(1)}>Back</Button>
+                    <Button
+                      onClick={handleFinalSubmit}
                       disabled={isSubmitting}
-                      size="lg" 
+                      size="lg"
                       className="h-12 px-8 uppercase tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                     >
                       {isSubmitting ? "Submitting..." : "Submit Registration"}
@@ -359,9 +253,9 @@ export function Register() {
                 </motion.div>
               )}
 
-              {currentStep === 4 && (
+              {currentStep === 3 && (
                 <motion.div
-                  key="step4"
+                  key="step3"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="p-10 text-center py-20"
@@ -389,7 +283,7 @@ export function Register() {
                     <Link href="/">
                       <Button variant="outline" size="lg">Return Home</Button>
                     </Link>
-                    <Link href={`/track?id=\${registrationId}`}>
+                    <Link href={`/track?id=${registrationId}`}>
                       <Button size="lg">Track Status</Button>
                     </Link>
                   </div>

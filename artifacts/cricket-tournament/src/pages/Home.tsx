@@ -15,10 +15,21 @@ const IMAGES = {
 };
 
 function CountdownTimer() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const calcTime = () => {
+    const target = new Date('2026-07-31T00:00:00').getTime();
+    const distance = target - new Date().getTime();
+    return {
+      days: Math.max(0, Math.floor(distance / (1000 * 60 * 60 * 24))),
+      hours: Math.max(0, Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))),
+      minutes: Math.max(0, Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))),
+      seconds: Math.max(0, Math.floor((distance % (1000 * 60)) / 1000))
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calcTime);
 
   useEffect(() => {
-    const target = new Date('2027-03-15T00:00:00').getTime();
+    const target = new Date('2026-07-31T00:00:00').getTime();
     
     const interval = setInterval(() => {
       const now = new Date().getTime();
@@ -74,7 +85,7 @@ export function Home() {
             </div>
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tighter text-white mb-6 drop-shadow-2xl">
               MP Premier<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-yellow-200 to-primary">Cricket 2025</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-yellow-200 to-primary">Cricket 2026</span>
             </h1>
             <p className="text-lg sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 font-light">
               The ultimate battleground for cricketing supremacy. Assemble your squad. Claim the glory.

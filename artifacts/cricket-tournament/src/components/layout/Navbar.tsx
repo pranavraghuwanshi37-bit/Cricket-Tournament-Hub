@@ -11,7 +11,7 @@ export function Navbar() {
             <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight uppercase tracking-wider text-foreground">MPCL<span className="text-primary">2025</span></h1>
+            <h1 className="font-bold text-lg leading-tight uppercase tracking-wider text-foreground">MPCL<span className="text-primary">2026</span></h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">Madhya Pradesh</p>
           </div>
         </Link>
