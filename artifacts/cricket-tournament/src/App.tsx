@@ -3,28 +3,21 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Home } from '@/pages/Home';
+import { Register } from '@/pages/Register';
+import { Track } from '@/pages/Track';
+import { Admin } from '@/pages/Admin';
+import { Toaster as Sonner } from 'sonner';
 
 const queryClient = new QueryClient();
-
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/register" component={Register} />
+      <Route path="/track" component={Track} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -38,6 +31,7 @@ function App() {
           <Router />
         </WouterRouter>
         <Toaster />
+        <Sonner theme="dark" position="top-center" />
       </TooltipProvider>
     </QueryClientProvider>
   );
