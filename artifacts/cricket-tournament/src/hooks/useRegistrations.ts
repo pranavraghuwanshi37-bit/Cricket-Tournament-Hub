@@ -100,31 +100,92 @@ export function useAdminRegistrations() {
   return { registrations, loading, error, approveRegistration, rejectRegistration };
 }
 
+/** Compress an image File to JPEG, max 1200px wide, 70% quality */
+async function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > MAX) {
+        height = Math.round((height * MAX) / width);
+        width = MAX;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error('Canvas compression failed')),
+        'image/jpeg',
+        0.70
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
+}
+
 export const submitRegistration = async (
   formData: RegistrationForm,
   file: File,
-  transactionId: string
+  transactionId: string,
+  onProgress?: (step: string) => void
 ): Promise<string> => {
   const generatedId = `MPCL-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-  // Upload file
-  const fileExt = file.name.split('.').pop();
-  const storageRef = ref(storage, `payment-proofs/${generatedId}_${Date.now()}.${fileExt}`);
-  await uploadBytes(storageRef, file);
-  const paymentProofUrl = await getDownloadURL(storageRef);
+  // Step 1: Compress image
+  onProgress?.('Compressing image…');
+  let uploadBlob: Blob;
+  try {
+    uploadBlob = await compressImage(file);
+  } catch {
+    // If compression fails for any reason, use original
+    uploadBlob = file;
+  }
 
-  // Save document
-  const docRef = doc(db, 'registrations', generatedId);
-  await setDoc(docRef, {
-    ...formData,
-    id: generatedId,
-    state: "Madhya Pradesh",
-    paymentProofUrl,
-    transactionId,
-    status: "pending",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
+  // Step 2: Upload to Firebase Storage
+  onProgress?.('Uploading payment proof…');
+  let paymentProofUrl = '';
+  try {
+    const storageRef = ref(storage, `payment-proofs/${generatedId}_${Date.now()}.jpg`);
+    await uploadBytes(storageRef, uploadBlob, { contentType: 'image/jpeg' });
+    paymentProofUrl = await getDownloadURL(storageRef);
+  } catch (err: unknown) {
+    const firebaseErr = err as { code?: string; message?: string };
+    if (firebaseErr?.code === 'storage/unauthorized') {
+      throw new Error('Storage permission denied. Please update Firebase Storage rules to allow uploads.');
+    }
+    if (firebaseErr?.code === 'storage/unknown' || firebaseErr?.code?.startsWith('storage/')) {
+      throw new Error(`Storage upload failed: ${firebaseErr.message ?? firebaseErr.code}`);
+    }
+    throw err;
+  }
+
+  // Step 3: Save to Firestore
+  onProgress?.('Saving registration…');
+  try {
+    const docRef = doc(db, 'registrations', generatedId);
+    await setDoc(docRef, {
+      ...formData,
+      id: generatedId,
+      state: 'Madhya Pradesh',
+      paymentProofUrl,
+      transactionId,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (err: unknown) {
+    const firebaseErr = err as { code?: string; message?: string };
+    if (firebaseErr?.code === 'permission-denied') {
+      throw new Error('Firestore permission denied. Please update Firestore Security Rules to allow writes.');
+    }
+    throw err;
+  }
 
   return generatedId;
 };

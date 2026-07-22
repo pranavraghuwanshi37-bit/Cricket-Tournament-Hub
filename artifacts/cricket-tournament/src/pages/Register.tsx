@@ -25,6 +25,7 @@ export function Register() {
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [transactionId, setTransactionId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStep, setSubmitStep] = useState('');
   const [registrationId, setRegistrationId] = useState<string | null>(null);
 
   const form = useForm<RegistrationForm>({
@@ -57,17 +58,20 @@ export function Register() {
     }
 
     setIsSubmitting(true);
+    setSubmitStep('Starting…');
     try {
       const formData = form.getValues();
-      const id = await submitRegistration(formData, paymentFile, transactionId);
+      const id = await submitRegistration(formData, paymentFile, transactionId, setSubmitStep);
       setRegistrationId(id);
       setCurrentStep(3);
       toast.success("Registration submitted successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit registration. Please try again.");
+      const msg = error instanceof Error ? error.message : "Failed to submit registration. Please try again.";
+      toast.error(msg, { duration: 8000 });
     } finally {
       setIsSubmitting(false);
+      setSubmitStep('');
     }
   };
 
@@ -264,7 +268,7 @@ export function Register() {
                       size="lg"
                       className="h-12 px-8 uppercase tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit Registration"}
+                      {isSubmitting ? (submitStep || "Submitting…") : "Submit Registration"}
                     </Button>
                   </div>
                 </motion.div>
