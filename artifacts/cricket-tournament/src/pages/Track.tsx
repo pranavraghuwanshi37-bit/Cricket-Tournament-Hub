@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRegistration } from '@/hooks/useRegistrations';
+// Registration type is now in the hook
 import { Search, MapPin, Phone, Mail, Trophy, ShieldCheck, Clock, XCircle } from 'lucide-react';
 import { useLocation } from 'wouter';
 

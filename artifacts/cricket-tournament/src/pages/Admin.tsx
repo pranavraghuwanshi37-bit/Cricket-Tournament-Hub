@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useAdminRegistrations } from '@/hooks/useRegistrations';
-import { Registration } from '@/types';
+import { useAdminRegistrations, Registration } from '@/hooks/useRegistrations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -110,7 +109,7 @@ export function Admin() {
       r.category,
       r.transactionId,
       r.status,
-      new Date(r.createdAt?.toDate?.() || Date.now()).toLocaleDateString()
+      new Date(r.createdAt || Date.now()).toLocaleDateString()
     ]);
 
     const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
@@ -222,7 +221,7 @@ export function Admin() {
                         <Badge variant="outline">{reg.category}</Badge>
                       </td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {reg.createdAt?.toDate?.() ? new Date(reg.createdAt.toDate()).toLocaleDateString() : 'N/A'}
+                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4">
                         <Badge className={
@@ -293,7 +292,7 @@ export function Admin() {
                       <div><span className="text-muted-foreground block mb-1">Category</span><span className="font-bold">{selectedReg.category}</span></div>
                       <div><span className="text-muted-foreground block mb-1">City</span><span className="font-bold">{selectedReg.city}</span></div>
                       <div><span className="text-muted-foreground block mb-1">State</span><span className="font-bold">{selectedReg.state}</span></div>
-                      <div><span className="text-muted-foreground block mb-1">Registered</span><span className="font-bold">{selectedReg.createdAt?.toDate?.() ? new Date(selectedReg.createdAt.toDate()).toLocaleDateString() : 'N/A'}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Registered</span><span className="font-bold">{selectedReg.createdAt ? new Date(selectedReg.createdAt).toLocaleDateString() : 'N/A'}</span></div>
                     </div>
                   </section>
                 </div>

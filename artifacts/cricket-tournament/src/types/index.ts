@@ -11,13 +11,3 @@ export const registrationSchema = z.object({
 
 export type RegistrationForm = z.infer<typeof registrationSchema>;
 
-export interface Registration extends RegistrationForm {
-  id: string;
-  state: "Madhya Pradesh";
-  paymentProofUrl: string;
-  transactionId: string;
-  status: "pending" | "approved" | "rejected";
-  rejectionReason?: string;
-  createdAt: any;
-  updatedAt: any;
-}
