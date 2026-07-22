@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, doc, setDoc, getDoc, onSnapshot, query, orderBy, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Registration, RegistrationForm } from '@/types';
 
 export function useRegistration(id: string | null) {
@@ -100,14 +99,14 @@ export function useAdminRegistrations() {
   return { registrations, loading, error, approveRegistration, rejectRegistration };
 }
 
-/** Compress an image File to JPEG, max 1200px wide, 70% quality */
-async function compressImage(file: File): Promise<Blob> {
+/** Compress image to JPEG data URL (base64), max 900px wide, 65% quality */
+async function imageToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const MAX = 1200;
+      const MAX = 900;
       let { width, height } = img;
       if (width > MAX) {
         height = Math.round((height * MAX) / width);
@@ -116,15 +115,10 @@ async function compressImage(file: File): Promise<Blob> {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob(
-        (blob) => blob ? resolve(blob) : reject(new Error('Canvas compression failed')),
-        'image/jpeg',
-        0.70
-      );
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.65));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
     img.src = url;
   });
 }
@@ -137,35 +131,17 @@ export const submitRegistration = async (
 ): Promise<string> => {
   const generatedId = `MPCL-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-  // Step 1: Compress image
+  // Step 1: Compress image → base64 (no Storage needed, no CORS issues)
   onProgress?.('Compressing image…');
-  let uploadBlob: Blob;
-  try {
-    uploadBlob = await compressImage(file);
-  } catch {
-    // If compression fails for any reason, use original
-    uploadBlob = file;
-  }
-
-  // Step 2: Upload to Firebase Storage
-  onProgress?.('Uploading payment proof…');
   let paymentProofUrl = '';
   try {
-    const storageRef = ref(storage, `payment-proofs/${generatedId}_${Date.now()}.jpg`);
-    await uploadBytes(storageRef, uploadBlob, { contentType: 'image/jpeg' });
-    paymentProofUrl = await getDownloadURL(storageRef);
-  } catch (err: unknown) {
-    const firebaseErr = err as { code?: string; message?: string };
-    if (firebaseErr?.code === 'storage/unauthorized') {
-      throw new Error('Storage permission denied. Please update Firebase Storage rules to allow uploads.');
-    }
-    if (firebaseErr?.code === 'storage/unknown' || firebaseErr?.code?.startsWith('storage/')) {
-      throw new Error(`Storage upload failed: ${firebaseErr.message ?? firebaseErr.code}`);
-    }
-    throw err;
+    paymentProofUrl = await imageToBase64(file);
+  } catch {
+    // If canvas fails (unlikely), continue without image
+    paymentProofUrl = '';
   }
 
-  // Step 3: Save to Firestore
+  // Step 2: Save everything to Firestore
   onProgress?.('Saving registration…');
   try {
     const docRef = doc(db, 'registrations', generatedId);
@@ -182,7 +158,7 @@ export const submitRegistration = async (
   } catch (err: unknown) {
     const firebaseErr = err as { code?: string; message?: string };
     if (firebaseErr?.code === 'permission-denied') {
-      throw new Error('Firestore permission denied. Please update Firestore Security Rules to allow writes.');
+      throw new Error('Database permission denied — please update Firestore Security Rules to allow writes (set: allow read, write: if true)');
     }
     throw err;
   }
