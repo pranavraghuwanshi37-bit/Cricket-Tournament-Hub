@@ -39,17 +39,45 @@ export function useRegistration(id: string | null) {
 export function useAdminRegistrations() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Try ordered query first; fall back to unordered if index is missing
     const q = query(collection(db, 'registrations'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data: Registration[] = [];
-      snapshot.forEach((doc) => {
-        data.push(doc.data() as Registration);
-      });
-      setRegistrations(data);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data: Registration[] = [];
+        snapshot.forEach((d) => data.push(d.data() as Registration));
+        setRegistrations(data);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        console.error('Firestore error:', err);
+        // If orderBy index missing, retry without ordering
+        if (err.code === 'failed-precondition') {
+          const fallback = query(collection(db, 'registrations'));
+          onSnapshot(
+            fallback,
+            (snapshot) => {
+              const data: Registration[] = [];
+              snapshot.forEach((d) => data.push(d.data() as Registration));
+              setRegistrations(data);
+              setLoading(false);
+              setError(null);
+            },
+            (err2) => {
+              setError(err2.message);
+              setLoading(false);
+            }
+          );
+        } else {
+          setError(err.message);
+          setLoading(false);
+        }
+      }
+    );
 
     return () => unsubscribe();
   }, []);
@@ -69,7 +97,7 @@ export function useAdminRegistrations() {
     });
   };
 
-  return { registrations, loading, approveRegistration, rejectRegistration };
+  return { registrations, loading, error, approveRegistration, rejectRegistration };
 }
 
 export const submitRegistration = async (

@@ -53,7 +53,7 @@ export function Admin() {
     sessionStorage.getItem('admin_auth') === 'true'
   );
 
-  const { registrations, loading, approveRegistration, rejectRegistration } = useAdminRegistrations();
+  const { registrations, loading, error, approveRegistration, rejectRegistration } = useAdminRegistrations();
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [search, setSearch] = useState('');
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
@@ -99,7 +99,7 @@ export function Admin() {
   };
 
   const exportCSV = () => {
-    const headers = ["ID", "Team Name", "Captain", "Phone", "Email", "City", "Category", "Players", "Transaction ID", "Status", "Date"];
+    const headers = ["ID", "Team Name", "Captain", "Phone", "Email", "City", "Category", "Transaction ID", "Status", "Date"];
     const rows = filteredRegistrations.map(r => [
       r.id,
       r.teamName,
@@ -108,18 +108,17 @@ export function Admin() {
       r.captainEmail,
       r.city,
       r.category,
-      r.players.length.toString(),
       r.transactionId,
       r.status,
       new Date(r.createdAt?.toDate?.() || Date.now()).toLocaleDateString()
     ]);
-    
-    const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"\${c}"`).join(','))].join('\\n');
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `mpcl-registrations-\${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `mpcl-registrations-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
 
@@ -203,6 +202,12 @@ export function Admin() {
               <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading registrations...</td></tr>
+                ) : error ? (
+                  <tr><td colSpan={6} className="px-6 py-8 text-center">
+                    <p className="text-destructive font-bold mb-2">Firestore read failed</p>
+                    <p className="text-muted-foreground text-sm max-w-md mx-auto">{error}</p>
+                    <p className="text-muted-foreground text-xs mt-3">Go to Firebase Console → Firestore → Rules and set: <code className="bg-muted px-1 rounded">allow read, write: if true;</code> (for testing)</p>
+                  </td></tr>
                 ) : filteredRegistrations.length === 0 ? (
                   <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No registrations found.</td></tr>
                 ) : (
@@ -283,28 +288,12 @@ export function Admin() {
                   </section>
 
                   <section>
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Player Roster ({selectedReg.players.length})</h3>
-                    <div className="bg-background rounded-lg border border-border overflow-hidden">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-2">Name</th>
-                            <th className="px-4 py-2">Age</th>
-                            <th className="px-4 py-2">Role</th>
-                            <th className="px-4 py-2">Phone</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {selectedReg.players.map((p, i) => (
-                            <tr key={i}>
-                              <td className="px-4 py-2 font-medium">{p.name}</td>
-                              <td className="px-4 py-2">{p.age}</td>
-                              <td className="px-4 py-2"><Badge variant="outline" className="text-[10px]">{p.role}</Badge></td>
-                              <td className="px-4 py-2 text-muted-foreground">{p.phone || '-'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Team Details</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground block mb-1">Category</span><span className="font-bold">{selectedReg.category}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">City</span><span className="font-bold">{selectedReg.city}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">State</span><span className="font-bold">{selectedReg.state}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Registered</span><span className="font-bold">{selectedReg.createdAt?.toDate?.() ? new Date(selectedReg.createdAt.toDate()).toLocaleDateString() : 'N/A'}</span></div>
                     </div>
                   </section>
                 </div>
