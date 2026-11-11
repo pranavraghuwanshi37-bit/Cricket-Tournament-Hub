@@ -126,10 +126,35 @@ router.post('/registrations', async (req, res) => {
       return;
     }
 
+    // Only Gwalior & Sagar divisions are eligible
+    const division = String(body.division || '').trim();
+    if (division !== 'Gwalior' && division !== 'Sagar') {
+      res.status(400).json({ error: 'Only teams from Gwalior or Sagar division are allowed to register.' });
+      return;
+    }
+
+    // Hard cap of 250 total registrations
+    if (db) {
+      try {
+        const countResult = await db.select().from(registrationsTable);
+        if (countResult.length >= 250) {
+          res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 teams.' });
+          return;
+        }
+      } catch (e) {
+        console.warn('Could not count registrations for cap check:', e);
+      }
+    }
+    const existingLocal = readLocalFilesData();
+    if (existingLocal.length >= 250) {
+      res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 teams.' });
+      return;
+    }
+
     const now = new Date().toISOString();
     const dateStr = now.slice(0, 10).replace(/-/g, '');
     const suffix = Math.random().toString(36).substring(2, 7).toUpperCase();
-    const id = `MPCL-${dateStr}-${suffix}`;
+    const id = `YCC-${dateStr}-${suffix}`;
 
     const registration = {
       id,
@@ -138,6 +163,7 @@ router.post('/registrations', async (req, res) => {
       captainPhone: String(body.captainPhone || ''),
       captainEmail: String(body.captainEmail || ''),
       city: String(body.city || ''),
+      division: division,
       state: String(body.state || 'Madhya Pradesh'),
       category: String(body.category || ''),
       transactionId: String(body.transactionId || ''),

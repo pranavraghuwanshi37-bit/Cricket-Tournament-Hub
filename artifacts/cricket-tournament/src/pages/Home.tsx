@@ -82,15 +82,17 @@ export function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/50 border border-primary/20 backdrop-blur-md text-primary text-sm font-medium mb-8">
-              <MapPin className="w-4 h-4" /> Madhya Pradesh
+              <MapPin className="w-4 h-4" /> Gwalior &amp; Sagar Divisions
             </div>
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tighter text-white mb-6 drop-shadow-2xl">
-              MP Premier<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-yellow-200 to-primary">Cricket 2026</span>
+              YCC <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-yellow-200 to-primary">CUP 2026</span>
             </h1>
-            <p className="text-lg sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 font-light">
+            <p className="text-lg sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-6 font-light">
               The ultimate battleground for cricketing supremacy. Assemble your squad. Claim the glory.
             </p>
+            <div className="mx-auto max-w-2xl rounded-lg border-2 border-red-600 bg-red-950/50 px-4 py-3 mb-10">
+              <p className="text-sm font-bold text-red-500 uppercase tracking-wide">⚠ Only Gwalior &amp; Sagar Division teams are allowed to register</p>
+            </div>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link href="/register">
@@ -219,6 +221,28 @@ export function Home() {
             <Link href="/register">
               <Button size="lg" className="w-full h-12 text-lg uppercase tracking-wider font-bold">Proceed to Register</Button>
             </Link>
+          </div>
+        </div>
+      </section>
+      {/* Organisers & Contact */}
+      <section className="py-24 bg-card border-t border-border">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-4xl font-bold uppercase tracking-tight mb-4">Organisers &amp; Contact</h2>
+          <p className="text-muted-foreground mb-12">For any queries regarding registration or payment, reach out to the organisers directly.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="bg-background border border-primary/30 rounded-xl p-6">
+              <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Organiser</p>
+              <p className="text-xl font-bold text-white mb-1">Ravindra Yadav</p>
+              <a href="tel:+919131030155" className="inline-block mt-2 rounded-md bg-primary/10 border border-primary/30 px-4 py-2 font-mono font-bold text-primary hover:bg-primary/20 transition-colors">+91 91310 30155</a>
+            </div>
+            <div className="bg-background border border-primary/30 rounded-xl p-6">
+              <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Organiser</p>
+              <p className="text-xl font-bold text-white mb-1">Aditya Raghuwanshi</p>
+              <a href="tel:+918223822228" className="inline-block mt-2 rounded-md bg-primary/10 border border-primary/30 px-4 py-2 font-mono font-bold text-primary hover:bg-primary/20 transition-colors">+91 82238 22228</a>
+            </div>
+          </div>
+          <div className="mt-8 mx-auto max-w-2xl rounded-lg border-2 border-red-600 bg-red-950/50 px-4 py-3">
+            <p className="text-sm font-bold text-red-500 uppercase tracking-wide">⚠ Note: Only Gwalior &amp; Sagar Division teams are allowed</p>
           </div>
         </div>
       </section>

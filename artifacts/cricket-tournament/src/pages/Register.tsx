@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import phonepeQr from '@assets/e228529f-b322-4684-a894-639b96ba4986_1784655226760.jpg';
 import { Layout } from '@/components/layout/Layout';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registrationSchema, RegistrationForm } from '@/types';
+import { registrationSchema, RegistrationForm, ALLOWED_DIVISION_CITIES, ALLOWED_DIVISIONS } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { submitRegistration } from '@/hooks/useRegistrations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, IndianRupee, CheckCircle2, Upload, Copy } from 'lucide-react';
+import { Trophy, IndianRupee, CheckCircle2, Upload, Copy, AlertTriangle, Users } from 'lucide-react';
 import { Link } from 'wouter';
 import { toast } from 'sonner';
 
@@ -27,6 +27,20 @@ export function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStep, setSubmitStep] = useState('');
   const [registrationId, setRegistrationId] = useState<string | null>(null);
+  const [slotsLeft, setSlotsLeft] = useState<number | null>(null);
+  const [isFull, setIsFull] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/registrations')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: unknown) => {
+        if (Array.isArray(data)) {
+          setSlotsLeft(Math.max(0, 250 - data.length));
+          setIsFull(data.length >= 250);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
@@ -36,13 +50,14 @@ export function Register() {
       captainPhone: '',
       captainEmail: '',
       city: '',
+      division: 'Gwalior',
       category: 'Open',
     },
     mode: 'onTouched'
   });
 
   const validateStep1 = async () => {
-    const fieldsToValidate: (keyof RegistrationForm)[] = ['teamName', 'captainName', 'captainPhone', 'captainEmail', 'city', 'category'];
+    const fieldsToValidate: (keyof RegistrationForm)[] = ['teamName', 'captainName', 'captainPhone', 'captainEmail', 'city', 'division', 'category'];
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) setCurrentStep(2);
   };
@@ -131,6 +146,34 @@ export function Register() {
                     <p className="text-muted-foreground">Enter your core team details to get started.</p>
                   </div>
 
+                  {isFull ? (
+                    <div className="flex items-start gap-3 rounded-lg border-2 border-destructive bg-destructive/10 px-4 py-4">
+                      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                      <div>
+                        <p className="font-bold text-destructive">Registration Closed — All 250 Teams Full</p>
+                        <p className="text-sm text-muted-foreground">The tournament has reached its maximum of 250 teams. Registrations are no longer being accepted.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 rounded-lg border-2 border-red-600 bg-red-950/40 px-4 py-4">
+                      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                      <div>
+                        <p className="font-bold text-red-500 uppercase tracking-wide">⚠ Important: Only Gwalior &amp; Sagar Division Allowed</p>
+                        <p className="text-sm text-red-300/90">Only players/teams from <span className="font-bold text-red-400">Gwalior division</span> and <span className="font-bold text-red-400">Sagar division</span> are eligible to register. Registrations from all other divisions will be rejected.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+                    <Users className="h-5 w-5 shrink-0 text-primary" />
+                    <p className="text-sm font-medium text-foreground">
+                      Total team slots: <span className="font-bold text-primary">250</span>
+                      {slotsLeft !== null && !isFull && (
+                        <span className="text-muted-foreground"> — {slotsLeft} slot{slotsLeft === 1 ? '' : 's'} remaining</span>
+                      )}
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2 sm:col-span-2">
                       <Label>Team Name</Label>
@@ -169,9 +212,22 @@ export function Register() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>City</Label>
-                      <Input {...form.register('city')} className="h-12" placeholder="e.g. Indore" />
+                      <Label>Division (Select One)</Label>
+                      <select
+                        {...form.register('division')}
+                        className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      >
+                        {ALLOWED_DIVISIONS.map((d) => (
+                          <option key={d} value={d}>{d} Division</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>City / District</Label>
+                      <Input {...form.register('city')} className="h-12" placeholder="e.g. Gwalior, Datia, Chhatarpur…" />
                       {form.formState.errors.city && <p className="text-sm text-destructive">{form.formState.errors.city.message}</p>}
+                      <p className="text-xs text-muted-foreground">Must be a district under the Gwalior or Sagar division.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -183,7 +239,9 @@ export function Register() {
                   </div>
 
                   <div className="flex justify-end pt-6 border-t border-border">
-                    <Button onClick={validateStep1} size="lg" className="h-12 px-8 uppercase tracking-widest">Next Step &rarr;</Button>
+                    <Button onClick={validateStep1} disabled={isFull} size="lg" className="h-12 px-8 uppercase tracking-widest">
+                      {isFull ? 'Registration Full' : 'Next Step \u2192'}
+                    </Button>
                   </div>
                 </motion.div>
               )}

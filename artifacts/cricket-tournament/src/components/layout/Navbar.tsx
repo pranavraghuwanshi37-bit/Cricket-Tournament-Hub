@@ -11,8 +11,8 @@ export function Navbar() {
             <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight uppercase tracking-wider text-foreground">MPCL<span className="text-primary">2026</span></h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">Madhya Pradesh</p>
+            <h1 className="font-bold text-lg leading-tight uppercase tracking-wider text-foreground">YCC<span className="text-primary">CUP</span></h1>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">Gwalior &amp; Sagar</p>
           </div>
         </Link>
         <div className="flex items-center gap-6">

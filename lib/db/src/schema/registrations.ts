@@ -1,6 +1,4 @@
 import { pgTable, text, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export const registrationsTable = pgTable("registrations", {
   id: text("id").primaryKey(),
@@ -9,6 +7,7 @@ export const registrationsTable = pgTable("registrations", {
   captainPhone: text("captain_phone").notNull(),
   captainEmail: text("captain_email").notNull(),
   city: text("city").notNull(),
+  division: text("division").notNull().default(""),
   state: text("state").notNull(),
   category: text("category").notNull(),
   transactionId: text("transaction_id").notNull(),
@@ -20,6 +19,4 @@ export const registrationsTable = pgTable("registrations", {
   extraDetails: jsonb("extra_details"),
 });
 
-export const insertRegistrationSchema = createInsertSchema(registrationsTable);
-export type InsertRegistration = z.infer<typeof insertRegistrationSchema>;
 export type Registration = typeof registrationsTable.$inferSelect;
