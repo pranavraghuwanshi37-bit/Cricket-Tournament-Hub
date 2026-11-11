@@ -89,11 +89,13 @@ async function getAllRegistrations(): Promise<Record<string, any>[]> {
           try {
             await db.insert(registrationsTable).values({
               id: String(item.id),
-              teamName: String(item.teamName || ''),
-              captainName: String(item.captainName || ''),
-              captainPhone: String(item.captainPhone || ''),
-              captainEmail: String(item.captainEmail || ''),
+              playerName: String(item.playerName || ''),
+              playerPhone: String(item.playerPhone || ''),
+              playerEmail: String(item.playerEmail || ''),
+              playerAge: String(item.playerAge || ''),
+              playerRole: String(item.playerRole || 'All-Rounder'),
               city: String(item.city || ''),
+              division: String(item.division || ''),
               state: String(item.state || 'Madhya Pradesh'),
               category: String(item.category || ''),
               transactionId: String(item.transactionId || ''),
