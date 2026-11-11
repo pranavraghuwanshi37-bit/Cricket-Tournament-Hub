@@ -3,19 +3,19 @@ import phonepeQr from '@assets/e228529f-b322-4684-a894-639b96ba4986_178465522676
 import { Layout } from '@/components/layout/Layout';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registrationSchema, RegistrationForm, ALLOWED_DIVISION_CITIES, ALLOWED_DIVISIONS } from '@/types';
+import { registrationSchema, RegistrationForm, ALLOWED_DIVISIONS, MAX_PLAYERS, REGISTRATION_FEE } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { submitRegistration } from '@/hooks/useRegistrations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, IndianRupee, CheckCircle2, Upload, Copy, AlertTriangle, Users } from 'lucide-react';
+import { Trophy, IndianRupee, CheckCircle2, Upload, Copy, AlertTriangle, Users, Gavel } from 'lucide-react';
 import { Link } from 'wouter';
 import { toast } from 'sonner';
 
 const STEPS = [
-  { id: 1, title: 'Team Info', icon: Trophy },
+  { id: 1, title: 'Player Info', icon: Trophy },
   { id: 2, title: 'Payment', icon: IndianRupee },
   { id: 3, title: 'Done', icon: CheckCircle2 }
 ];
@@ -35,8 +35,8 @@ export function Register() {
       .then((res) => (res.ok ? res.json() : []))
       .then((data: unknown) => {
         if (Array.isArray(data)) {
-          setSlotsLeft(Math.max(0, 250 - data.length));
-          setIsFull(data.length >= 250);
+          setSlotsLeft(Math.max(0, MAX_PLAYERS - data.length));
+          setIsFull(data.length >= MAX_PLAYERS);
         }
       })
       .catch(() => {});
@@ -45,10 +45,11 @@ export function Register() {
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      teamName: '',
-      captainName: '',
-      captainPhone: '',
-      captainEmail: '',
+      playerName: '',
+      playerPhone: '',
+      playerEmail: '',
+      playerAge: '',
+      playerRole: 'All-Rounder',
       city: '',
       division: 'Gwalior',
       category: 'Open',
@@ -57,7 +58,7 @@ export function Register() {
   });
 
   const validateStep1 = async () => {
-    const fieldsToValidate: (keyof RegistrationForm)[] = ['teamName', 'captainName', 'captainPhone', 'captainEmail', 'city', 'division', 'category'];
+    const fieldsToValidate: (keyof RegistrationForm)[] = ['playerName', 'playerPhone', 'playerEmail', 'playerAge', 'playerRole', 'city', 'division', 'category'];
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) setCurrentStep(2);
   };
@@ -142,16 +143,16 @@ export function Register() {
                   className="p-6 sm:p-10 space-y-8"
                 >
                   <div>
-                    <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Team Information</h2>
-                    <p className="text-muted-foreground">Enter your core team details to get started.</p>
+                    <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Player Information</h2>
+                    <p className="text-muted-foreground">Register yourself as an individual player for the YCC CUP auction.</p>
                   </div>
 
                   {isFull ? (
                     <div className="flex items-start gap-3 rounded-lg border-2 border-destructive bg-destructive/10 px-4 py-4">
                       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                       <div>
-                        <p className="font-bold text-destructive">Registration Closed — All 250 Teams Full</p>
-                        <p className="text-sm text-muted-foreground">The tournament has reached its maximum of 250 teams. Registrations are no longer being accepted.</p>
+                        <p className="font-bold text-destructive">Registration Closed — All {MAX_PLAYERS} Players Full</p>
+                        <p className="text-sm text-muted-foreground">The tournament has reached its maximum of {MAX_PLAYERS} players. Registrations are no longer being accepted.</p>
                       </div>
                     </div>
                   ) : (
@@ -159,7 +160,7 @@ export function Register() {
                       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
                       <div>
                         <p className="font-bold text-red-500 uppercase tracking-wide">⚠ Important: Only Gwalior &amp; Sagar Division Allowed</p>
-                        <p className="text-sm text-red-300/90">Only players/teams from <span className="font-bold text-red-400">Gwalior division</span> and <span className="font-bold text-red-400">Sagar division</span> are eligible to register. Registrations from all other divisions will be rejected.</p>
+                        <p className="text-sm text-red-300/90">Only players from <span className="font-bold text-red-400">Gwalior division</span> and <span className="font-bold text-red-400">Sagar division</span> are eligible to register. Registrations from all other divisions will be rejected.</p>
                       </div>
                     </div>
                   )}
@@ -167,7 +168,7 @@ export function Register() {
                   <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
                     <Users className="h-5 w-5 shrink-0 text-primary" />
                     <p className="text-sm font-medium text-foreground">
-                      Total team slots: <span className="font-bold text-primary">250</span>
+                      Total player slots: <span className="font-bold text-primary">{MAX_PLAYERS}</span>
                       {slotsLeft !== null && !isFull && (
                         <span className="text-muted-foreground"> — {slotsLeft} slot{slotsLeft === 1 ? '' : 's'} remaining</span>
                       )}
@@ -176,31 +177,44 @@ export function Register() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2 sm:col-span-2">
-                      <Label>Team Name</Label>
-                      <Input {...form.register('teamName')} className="h-12 text-lg" placeholder="e.g. Bhopal Blasters" />
-                      {form.formState.errors.teamName && <p className="text-sm text-destructive">{form.formState.errors.teamName.message}</p>}
+                      <Label>Full Name</Label>
+                      <Input {...form.register('playerName')} className="h-12 text-lg" placeholder="e.g. Rahul Sharma" />
+                      {form.formState.errors.playerName && <p className="text-sm text-destructive">{form.formState.errors.playerName.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Captain Name</Label>
-                      <Input {...form.register('captainName')} className="h-12" placeholder="Full Name" />
-                      {form.formState.errors.captainName && <p className="text-sm text-destructive">{form.formState.errors.captainName.message}</p>}
+                      <Label>Phone Number</Label>
+                      <Input {...form.register('playerPhone')} className="h-12" placeholder="+91 XXXXXXXXXX" />
+                      {form.formState.errors.playerPhone && <p className="text-sm text-destructive">{form.formState.errors.playerPhone.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Captain Phone</Label>
-                      <Input {...form.register('captainPhone')} className="h-12" placeholder="+91 XXXXXXXXXX" />
-                      {form.formState.errors.captainPhone && <p className="text-sm text-destructive">{form.formState.errors.captainPhone.message}</p>}
+                      <Label>Email</Label>
+                      <Input {...form.register('playerEmail')} type="email" className="h-12" placeholder="email@example.com" />
+                      {form.formState.errors.playerEmail && <p className="text-sm text-destructive">{form.formState.errors.playerEmail.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Captain Email</Label>
-                      <Input {...form.register('captainEmail')} type="email" className="h-12" placeholder="email@example.com" />
-                      {form.formState.errors.captainEmail && <p className="text-sm text-destructive">{form.formState.errors.captainEmail.message}</p>}
+                      <Label>Age</Label>
+                      <Input {...form.register('playerAge')} type="number" className="h-12" placeholder="e.g. 19" />
+                      {form.formState.errors.playerAge && <p className="text-sm text-destructive">{form.formState.errors.playerAge.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Team Category</Label>
+                      <Label>Playing Role</Label>
+                      <select
+                        {...form.register('playerRole')}
+                        className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      >
+                        <option value="Batsman">Batsman</option>
+                        <option value="Bowler">Bowler</option>
+                        <option value="All-Rounder">All-Rounder</option>
+                        <option value="Wicket-Keeper">Wicket-Keeper</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Age Category</Label>
                       <select
                         {...form.register('category')}
                         className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -223,14 +237,14 @@ export function Register() {
                       </select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-2">
                       <Label>City / District</Label>
                       <Input {...form.register('city')} className="h-12" placeholder="e.g. Gwalior, Datia, Chhatarpur…" />
                       {form.formState.errors.city && <p className="text-sm text-destructive">{form.formState.errors.city.message}</p>}
                       <p className="text-xs text-muted-foreground">Must be a district under the Gwalior or Sagar division.</p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-2">
                       <Label>State</Label>
                       <div className="flex h-12 w-full rounded-md border border-border bg-muted/50 px-3 py-2 items-center text-muted-foreground select-none">
                         Madhya Pradesh
@@ -255,19 +269,23 @@ export function Register() {
                   className="p-6 sm:p-10 space-y-8"
                 >
                   <div className="text-center">
-                    <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Payment</h2>
-                    <p className="text-muted-foreground">Complete your registration by paying the tournament fee.</p>
+                    <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Registration Payment</h2>
+                    <p className="text-muted-foreground">Pay the registration fee to enter the YCC CUP auction.</p>
                   </div>
 
                   <div className="bg-card border border-primary/30 p-8 rounded-2xl text-center shadow-lg">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">Registration Fee</p>
-                    <p className="text-5xl font-black text-primary mb-8">₹3,500</p>
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">Registration Fee (Per Player)</p>
+                    <p className="text-5xl font-black text-primary mb-4">₹{REGISTRATION_FEE.toLocaleString('en-IN')}</p>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/30 px-4 py-2 mb-8">
+                      <Gavel className="w-4 h-4 text-primary" />
+                      <p className="text-sm font-bold text-primary">Auction entry only after payment is confirmed</p>
+                    </div>
 
                     <div className="bg-background rounded-xl p-6 border border-border text-left w-full">
                       <div className="flex flex-col sm:flex-row gap-6 items-center">
                         <div className="shrink-0 flex flex-col items-center gap-2">
                           <img src={phonepeQr} alt="PhonePe QR Code" className="w-44 h-44 rounded-xl border-2 border-primary/40 object-cover" />
-                          <span className="text-xs text-muted-foreground">Scan & Pay via PhonePe</span>
+                          <span className="text-xs text-muted-foreground">Scan & Pay ₹{REGISTRATION_FEE} via PhonePe</span>
                         </div>
                         <div className="flex-1 space-y-4 w-full">
                           <div>
@@ -344,7 +362,7 @@ export function Register() {
                   </div>
                   <h2 className="text-4xl font-bold uppercase tracking-tight mb-4">Registration Received!</h2>
                   <p className="text-lg text-muted-foreground max-w-lg mx-auto mb-8">
-                    Your team details and payment have been submitted. Our team will verify the payment and approve your registration within 24-48 hours.
+                    Your details and ₹{REGISTRATION_FEE} payment have been submitted. Once our team verifies the payment, you will be eligible to appear in the YCC CUP auction.
                   </p>
 
                   <div className="bg-card border border-border p-6 rounded-xl max-w-sm mx-auto mb-10">

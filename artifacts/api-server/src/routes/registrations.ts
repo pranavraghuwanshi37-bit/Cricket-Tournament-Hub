@@ -121,7 +121,7 @@ async function getAllRegistrations(): Promise<Record<string, any>[]> {
 router.post('/registrations', async (req, res) => {
   try {
     const body = req.body as Record<string, any>;
-    if (!body || !body.teamName || !body.captainName) {
+    if (!body || !body.playerName) {
       res.status(400).json({ error: 'Missing required fields' });
       return;
     }
@@ -129,16 +129,20 @@ router.post('/registrations', async (req, res) => {
     // Only Gwalior & Sagar divisions are eligible
     const division = String(body.division || '').trim();
     if (division !== 'Gwalior' && division !== 'Sagar') {
-      res.status(400).json({ error: 'Only teams from Gwalior or Sagar division are allowed to register.' });
+      res.status(400).json({ error: 'Only players from Gwalior or Sagar division are allowed to register.' });
+      return;
+    }
+    if (!body.playerName || String(body.playerName).trim().length < 3) {
+      res.status(400).json({ error: 'Player name is required' });
       return;
     }
 
-    // Hard cap of 250 total registrations
+    // Hard cap of 250 total player registrations
     if (db) {
       try {
         const countResult = await db.select().from(registrationsTable);
         if (countResult.length >= 250) {
-          res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 teams.' });
+          res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 players.' });
           return;
         }
       } catch (e) {
@@ -147,7 +151,7 @@ router.post('/registrations', async (req, res) => {
     }
     const existingLocal = readLocalFilesData();
     if (existingLocal.length >= 250) {
-      res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 teams.' });
+      res.status(400).json({ error: 'Registration full — the tournament has reached its limit of 250 players.' });
       return;
     }
 
@@ -158,10 +162,11 @@ router.post('/registrations', async (req, res) => {
 
     const registration = {
       id,
-      teamName: String(body.teamName),
-      captainName: String(body.captainName),
-      captainPhone: String(body.captainPhone || ''),
-      captainEmail: String(body.captainEmail || ''),
+      playerName: String(body.playerName || ''),
+      playerPhone: String(body.playerPhone || ''),
+      playerEmail: String(body.playerEmail || ''),
+      playerAge: String(body.playerAge || ''),
+      playerRole: String(body.playerRole || 'All-Rounder'),
       city: String(body.city || ''),
       division: division,
       state: String(body.state || 'Madhya Pradesh'),

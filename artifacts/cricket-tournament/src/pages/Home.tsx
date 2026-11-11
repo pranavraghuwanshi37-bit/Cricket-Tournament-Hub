@@ -95,14 +95,14 @@ export function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link href="/register">
+            <Link href="/register">
                 <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:shadow-[0_0_50px_rgba(212,175,55,0.6)] transition-all uppercase tracking-wide">
-                  Register Your Team
+                  Register Now
                 </Button>
               </Link>
               <div className="text-left hidden sm:block">
                 <p className="text-sm text-muted-foreground uppercase tracking-wider">Registration Fee</p>
-                <p className="text-2xl font-bold text-white">₹3,500 <span className="text-sm font-normal text-muted-foreground">/ team</span></p>
+                <p className="text-2xl font-bold text-white">₹500 <span className="text-sm font-normal text-muted-foreground">/ player</span></p>
               </div>
             </div>
 
@@ -115,7 +115,7 @@ export function Home() {
       <section className="py-24 bg-card relative z-20 border-y border-border">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-tight mb-4">Categories</h2>
+            <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-tight mb-4">Player Categories</h2>
             <div className="w-24 h-1 bg-primary mx-auto" />
           </div>
           
@@ -193,8 +193,8 @@ export function Home() {
           </div>
           <h2 className="text-4xl font-bold uppercase tracking-tight mb-6">Registration Fee</h2>
           <div className="bg-background border border-primary/30 p-8 rounded-2xl max-w-lg mx-auto shadow-2xl">
-            <p className="text-5xl font-black text-primary mb-2">₹3,500</p>
-            <p className="text-muted-foreground uppercase tracking-widest text-sm mb-8">Per Team</p>
+            <p className="text-5xl font-black text-primary mb-2">₹500</p>
+            <p className="text-muted-foreground uppercase tracking-widest text-sm mb-8">Per Player</p>
             
             <div className="bg-card p-6 rounded-xl text-left border border-border mb-8">
               <div className="flex flex-col sm:flex-row gap-6 items-center">
@@ -222,6 +222,7 @@ export function Home() {
               <Button size="lg" className="w-full h-12 text-lg uppercase tracking-wider font-bold">Proceed to Register</Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm text-muted-foreground">Payment confirmation is required before a player can appear in the auction.</p>
         </div>
       </section>
       {/* Organisers & Contact */}

@@ -33,7 +33,7 @@ export function Track() {
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold uppercase tracking-tight mb-4">Track Registration</h1>
-          <p className="text-muted-foreground">Enter your Registration ID to check the status of your team.</p>
+          <p className="text-muted-foreground">Enter your Registration ID to check the status of your registration.</p>
         </div>
 
         <Card className="mb-8 border-primary/20 shadow-lg shadow-primary/5">
@@ -44,7 +44,7 @@ export function Track() {
                 <Input 
                   value={searchId}
                   onChange={(e) => setSearchId(e.target.value)}
-                  placeholder="e.g. MPCL-20250101-A1B2C" 
+                  placeholder="e.g. YCC-20250101-A1B2C" 
                   className="pl-10 h-12 text-lg uppercase font-mono"
                 />
               </div>
@@ -90,12 +90,12 @@ export function Track() {
                 </h2>
                 {data.status === 'pending' && (
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    Your registration is under review. Our team will verify your payment and update the status within 24-48 hours.
+                    Your registration is under review. Our team will verify your ₹500 payment and update the status within 24-48 hours. You can appear in the auction only after your payment is confirmed.
                   </p>
                 )}
                 {data.status === 'approved' && (
                   <p className="text-sm text-secondary max-w-md mx-auto">
-                    Congratulations! Your team has been approved. You will receive further instructions via email soon.
+                    Congratulations! Your payment is confirmed and you are now eligible for the YCC CUP auction. You will receive further instructions soon.
                   </p>
                 )}
                 {data.status === 'rejected' && data.rejectionReason && (
@@ -107,8 +107,8 @@ export function Track() {
               <CardContent className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Team Name</h3>
-                    <p className="text-2xl font-bold text-white mb-6">{data.teamName}</p>
+                    <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Player Name</h3>
+                    <p className="text-2xl font-bold text-white mb-6">{data.playerName}</p>
                     
                     <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Registration ID</h3>
                     <p className="text-lg font-mono text-white mb-6">{data.id}</p>
@@ -118,18 +118,24 @@ export function Track() {
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Captain</h3>
+                      <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Playing Role</h3>
                       <div className="flex items-center gap-2 text-white">
-                        <Trophy className="w-4 h-4 text-primary" /> {data.captainName}
+                        <Trophy className="w-4 h-4 text-primary" /> {data.playerRole}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Age</h3>
+                      <div className="flex items-center gap-2 text-white text-sm mb-1">
+                        {data.playerAge}
                       </div>
                     </div>
                     <div>
                       <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Contact</h3>
                       <div className="flex items-center gap-2 text-white text-sm mb-1">
-                        <Phone className="w-4 h-4 text-muted-foreground" /> {data.captainPhone}
+                        <Phone className="w-4 h-4 text-muted-foreground" /> {data.playerPhone}
                       </div>
                       <div className="flex items-center gap-2 text-white text-sm">
-                        <Mail className="w-4 h-4 text-muted-foreground" /> {data.captainEmail}
+                        <Mail className="w-4 h-4 text-muted-foreground" /> {data.playerEmail}
                       </div>
                     </div>
                     <div>

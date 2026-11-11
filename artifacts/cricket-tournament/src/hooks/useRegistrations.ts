@@ -5,12 +5,14 @@ const API_BASE = '/api';
 
 export interface Registration {
   id: string;
-  teamName: string;
-  captainName: string;
-  captainPhone: string;
-  captainEmail: string;
+  playerName: string;
+  playerPhone: string;
+  playerEmail: string;
+  playerAge: string;
+  playerRole: string;
   city: string;
   state: string;
+  division: string;
   category: string;
   transactionId: string;
   paymentProofUrl: string;

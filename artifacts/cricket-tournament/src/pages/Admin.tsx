@@ -68,7 +68,7 @@ export function Admin() {
 
   const filteredRegistrations = registrations.filter(r => {
     const matchesFilter = filter === 'all' || r.status === filter;
-    const matchesSearch = r.teamName.toLowerCase().includes(search.toLowerCase()) || 
+    const matchesSearch = r.playerName.toLowerCase().includes(search.toLowerCase()) || 
                           r.id.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -81,9 +81,9 @@ export function Admin() {
   };
 
   const handleApprove = async (id: string) => {
-    if (confirm("Are you sure you want to approve this team?")) {
+    if (confirm("Are you sure you want to confirm this player's payment? Approving makes them eligible for the auction.")) {
       await approveRegistration(id);
-      toast.success("Team approved!");
+      toast.success("Payment confirmed — player is now eligible for the auction!");
       if (selectedReg?.id === id) setSelectedReg(null);
     }
   };
@@ -92,20 +92,22 @@ export function Admin() {
     const reason = prompt("Enter rejection reason:");
     if (reason !== null) {
       await rejectRegistration(id, reason || "Payment not verified");
-      toast.error("Team rejected.");
+      toast.error("Registration rejected.");
       if (selectedReg?.id === id) setSelectedReg(null);
     }
   };
 
   const exportCSV = () => {
-    const headers = ["ID", "Team Name", "Captain", "Phone", "Email", "City", "Category", "Transaction ID", "Status", "Date"];
+    const headers = ["ID", "Player Name", "Phone", "Email", "Age", "Role", "City", "Division", "Category", "Transaction ID", "Status", "Date"];
     const rows = filteredRegistrations.map(r => [
       r.id,
-      r.teamName,
-      r.captainName,
-      r.captainPhone,
-      r.captainEmail,
+      r.playerName,
+      r.playerPhone,
+      r.playerEmail,
+      r.playerAge,
+      r.playerRole,
       r.city,
+      (r as unknown as { division?: string }).division || '',
       r.category,
       r.transactionId,
       r.status,
@@ -117,7 +119,7 @@ export function Admin() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `mpcl-registrations-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `ycc-players-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
 
@@ -127,7 +129,7 @@ export function Admin() {
       <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <Trophy className="w-6 h-6 text-primary" />
-          <h1 className="font-bold text-lg uppercase tracking-wider">MPCL Admin</h1>
+          <h1 className="font-bold text-lg uppercase tracking-wider">YCC CUP Admin</h1>
         </div>
         <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
           <LogOut className="w-4 h-4 mr-2" /> Logout
@@ -172,7 +174,7 @@ export function Admin() {
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Search teams or ID..." 
+                placeholder="Search players or ID..." 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="pl-9 h-10"
@@ -191,7 +193,7 @@ export function Admin() {
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Registration ID</th>
-                  <th className="px-6 py-4 font-semibold">Team Info</th>
+                  <th className="px-6 py-4 font-semibold">Player Info</th>
                   <th className="px-6 py-4 font-semibold">Category</th>
                   <th className="px-6 py-4 font-semibold">Date</th>
                   <th className="px-6 py-4 font-semibold">Status</th>
@@ -214,8 +216,8 @@ export function Admin() {
                     <tr key={reg.id} className="hover:bg-muted/20 transition-colors">
                       <td className="px-6 py-4 font-mono text-sm">{reg.id}</td>
                       <td className="px-6 py-4">
-                        <p className="font-bold text-white">{reg.teamName}</p>
-                        <p className="text-xs text-muted-foreground">{reg.captainName} • {reg.city}</p>
+                        <p className="font-bold text-white">{reg.playerName}</p>
+                        <p className="text-xs text-muted-foreground">{reg.playerRole} • {reg.city}</p>
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant="outline">{reg.category}</Badge>
@@ -263,7 +265,7 @@ export function Admin() {
                   <Trophy className="w-8 h-8" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold uppercase tracking-tight">{selectedReg.teamName}</h2>
+                  <h2 className="text-3xl font-bold uppercase tracking-tight">{selectedReg.playerName}</h2>
                   <p className="text-muted-foreground font-mono">{selectedReg.id}</p>
                 </div>
                 <div className="ml-auto">
@@ -277,20 +279,22 @@ export function Admin() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                   <section>
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Captain Details</h3>
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Player Details</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div><span className="text-muted-foreground block mb-1">Name</span><span className="font-bold">{selectedReg.captainName}</span></div>
-                      <div><span className="text-muted-foreground block mb-1">Phone</span><span className="font-bold">{selectedReg.captainPhone}</span></div>
-                      <div><span className="text-muted-foreground block mb-1">Email</span><span className="font-bold">{selectedReg.captainEmail}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Name</span><span className="font-bold">{selectedReg.playerName}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Phone</span><span className="font-bold">{selectedReg.playerPhone}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Email</span><span className="font-bold">{selectedReg.playerEmail}</span></div>
                       <div><span className="text-muted-foreground block mb-1">Location</span><span className="font-bold">{selectedReg.city}, {selectedReg.state}</span></div>
                     </div>
                   </section>
 
                   <section>
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Team Details</h3>
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Registration Details</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground block mb-1">Playing Role</span><span className="font-bold">{selectedReg.playerRole}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Age</span><span className="font-bold">{selectedReg.playerAge}</span></div>
                       <div><span className="text-muted-foreground block mb-1">Category</span><span className="font-bold">{selectedReg.category}</span></div>
-                      <div><span className="text-muted-foreground block mb-1">City</span><span className="font-bold">{selectedReg.city}</span></div>
+                      <div><span className="text-muted-foreground block mb-1">Division</span><span className="font-bold">{(selectedReg as unknown as { division?: string }).division || '—'}</span></div>
                       <div><span className="text-muted-foreground block mb-1">State</span><span className="font-bold">{selectedReg.state}</span></div>
                       <div><span className="text-muted-foreground block mb-1">Registered</span><span className="font-bold">{selectedReg.createdAt ? new Date(selectedReg.createdAt).toLocaleDateString() : 'N/A'}</span></div>
                     </div>
@@ -322,7 +326,7 @@ export function Admin() {
                       <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Admin Actions</h3>
                       <div className="flex flex-col gap-3">
                         <Button onClick={() => handleApprove(selectedReg.id)} className="w-full bg-secondary hover:bg-secondary/90 text-white">
-                          <CheckCircle className="w-4 h-4 mr-2" /> Approve Registration
+                          <CheckCircle className="w-4 h-4 mr-2" /> Confirm Payment &amp; Approve
                         </Button>
                         <Button onClick={() => handleReject(selectedReg.id)} variant="destructive" className="w-full">
                           <XCircle className="w-4 h-4 mr-2" /> Reject Registration
